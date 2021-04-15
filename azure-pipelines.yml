@@ -19,9 +19,19 @@ steps:
   displayName: 'Run a multi-line script'
 - task: DotNetCoreCLI@2
   inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+    feedsToUse: 'select'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  inputs:
     command: 'pack'
     packagesToPack: '**/*.csproj'
-    nobuild: false
+    nobuild: true
     versioningScheme: 'off'
 - task: NuGetCommand@2
   inputs:
