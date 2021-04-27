@@ -1,6 +1,16 @@
+[![Build Status](https://jadsena.visualstudio.com/Redis.Data/_apis/build/status/jadsena.Redis.Data?branchName=main&jobName=Job)](https://jadsena.visualstudio.com/Redis.Data/_build/latest?definitionId=9&branchName=main)
+![Nuget](https://img.shields.io/nuget/dt/Redis.Data?style=plastic)
+![Nuget (with prereleases)](https://img.shields.io/nuget/vpre/Redis.Data?style=plastic)
+
 # Redis.Data
 
 Componente para facilitar a utilização do Redis como banco de dados.
+
+## Intalação
+
+Abrir o gerenciador de pacotes nuget e pesquisar na aba `Procurar` pelo nome do pacote `Redis.Data` e então clique em instalar.
+
+
 
 ## Utilização
 
