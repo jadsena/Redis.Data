@@ -6,7 +6,7 @@
 
 Componente para facilitar a utilização do Redis como banco de dados.
 
-## Intalação
+## Instalação
 
 Abrir o gerenciador de pacotes nuget e pesquisar na aba `Procurar` pelo nome do pacote `Redis.Data` e então clique em instalar.
 
