@@ -1,16 +1,43 @@
+[![Build Status](https://jadsena.visualstudio.com/Redis.Data/_apis/build/status/jadsena.Redis.Data?branchName=main&jobName=Job)](https://jadsena.visualstudio.com/Redis.Data/_build/latest?definitionId=9&branchName=main)
+![Nuget](https://img.shields.io/nuget/dt/Redis.Data?style=plastic)
+![Nuget (with prereleases)](https://img.shields.io/nuget/vpre/Redis.Data?style=plastic)
+
 # Redis.Data
 
 Componente para facilitar a utilização do Redis como banco de dados.
+
+## Instalação
+
+Abrir o gerenciador de pacotes nuget e pesquisar na aba `Procurar` pelo nome do pacote `Redis.Data` e então clique em instalar.
+
+
 
 ## Utilização
 
 Na class `startup.cs` realizar as seguintes alterações:
 
+Utilizando o database padrãodo Redis
+
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddControllers();
+    //Metodo default
     services.AddRedisDB(Configuration.GetConnectionString("Redis"));
+
+    // Register the Swagger generator, defining 1 or more Swagger documents
+    services.AddSwaggerGen();
+}
+```
+
+Utilizando um database diferente do padrão
+
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddControllers();
+    //Metodo setando o database
+    services.AddRedisDB(Configuration.GetConnectionString("Redis"), 1);
 
     // Register the Swagger generator, defining 1 or more Swagger documents
     services.AddSwaggerGen();
@@ -34,7 +61,7 @@ Configurando a conexão com o Redis no arquivo `appSettings.json`
 }
 ```
 
-Usando a aconexão em um Controller
+Usando a conexão em um Controller
 
 ```csharp
 [Route("api/[controller]")]

@@ -1,4 +1,6 @@
-﻿using StackExchange.Redis;
+﻿using Microsoft.Extensions.Options;
+using Redis.Data.Options;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,11 +12,18 @@ namespace Redis.Data
     public class RedisContext : IRedisContext
     {
         private readonly IConnectionMultiplexer _connection;
-        private readonly IDatabase _db;
-        public RedisContext(IConnectionMultiplexer connection)
+        private IDatabase _db;
+        public IDatabase Database { get; }
+        public RedisContext(IConnectionMultiplexer connection, IOptions<DatabaseOptions> options)
         {
             _connection = connection;
-            _db = connection.GetDatabase();
+            _db = connection.GetDatabase(options.Value.Database);
+            Database = _db;
+        }
+        public void SetDatabase(int db = -1, object asyncState = null)
+        {
+            if (_db.Database == db) return;
+            _db = _connection.GetDatabase(db, asyncState);
         }
         public bool Set(string key, string value)
         {
@@ -26,7 +35,7 @@ namespace Redis.Data
         }
         public T Get<T>(string key)
         {
-            string vlr = _db.StringGet(key);
+            string vlr = Get(key);
             if (string.IsNullOrWhiteSpace(vlr)) return default;
             return JsonSerializer.Deserialize<T>(vlr);
         }
@@ -48,7 +57,7 @@ namespace Redis.Data
         }
         public async Task<T> GetAsync<T>(string key)
         {
-            string vlr = await _db.StringGetAsync(key);
+            string vlr = await GetAsync(key);
             if (string.IsNullOrWhiteSpace(vlr)) return default;
             return JsonSerializer.Deserialize<T>(vlr);
         }
