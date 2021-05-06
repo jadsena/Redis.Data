@@ -6,7 +6,7 @@
     <Company>JADSena</Company>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/jadsena/Redis.Data</RepositoryUrl>
-    <Version>1.0.2</Version>
+    <Version>1.1.0</Version>
     <Description>Componente para facilitar a utilização do Redis como banco de dados.</Description>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Redis.Data.snk</AssemblyOriginatorKeyFile>
