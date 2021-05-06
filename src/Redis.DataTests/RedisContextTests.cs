@@ -1,6 +1,8 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.Extensions.Options;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Redis.Data;
+using Redis.Data.Options;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
@@ -16,6 +18,8 @@ namespace Redis.Data.Tests
         private Mock<IConnectionMultiplexer> MockConn { get; }
         private Mock<IDatabase> MockDB { get; }
         private Mock<IServer> MockServer { get; }
+        private Mock<IOptions<DatabaseOptions>> MockOpt { get; }
+        private IRedisContext RedisContext { get; }
 
         public RedisContextTests()
         {
@@ -24,6 +28,9 @@ namespace Redis.Data.Tests
             MockServer = new Mock<IServer>();
             MockConn.Setup(m => m.GetDatabase(It.IsAny<int>(), It.IsAny<object>())).Returns(MockDB.Object);
             MockConn.Setup(m => m.GetServer(It.IsAny<string>(), It.IsAny<object>())).Returns(MockServer.Object);
+            MockOpt = new Mock<IOptions<DatabaseOptions>>();
+            MockOpt.Setup(m => m.Value).Returns(new DatabaseOptions { Database=-1 });
+            RedisContext = new RedisContext(MockConn.Object, MockOpt.Object);
         }
         [TestMethod()]
         public void GetStringTest()
@@ -31,9 +38,8 @@ namespace Redis.Data.Tests
             //Arrange
             string expected = "Teste";
             MockDB.Setup(m => m.StringGet(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>())).Returns("Teste");
-            RedisContext redisContext = new RedisContext(MockConn.Object);
             //Act
-            string actual = redisContext.Get("variavel");
+            string actual = RedisContext.Get("variavel");
             //Assert
             Assert.AreEqual(expected, actual);
         }
@@ -43,9 +49,8 @@ namespace Redis.Data.Tests
             //Arrange
             var expected = JsonSerializer.Deserialize<Test>("{\"Teste\":\"Teste\"}");
             MockDB.Setup(m => m.StringGet(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>())).Returns("{\"Teste\":\"Teste\"}");
-            RedisContext redisContext = new RedisContext(MockConn.Object);
             //Act
-            var actual = redisContext.Get<Test>("variavel");
+            var actual = RedisContext.Get<Test>("variavel");
             //Assert
             Assert.AreEqual(expected.Teste, actual.Teste);
         }
@@ -54,9 +59,8 @@ namespace Redis.Data.Tests
         {
             //Arrange
             MockDB.Setup(m => m.StringGet(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>())).Returns("");
-            RedisContext redisContext = new RedisContext(MockConn.Object);
             //Act
-            var actual = redisContext.Get<Test>("variavel");
+            var actual = RedisContext.Get<Test>("variavel");
             //Assert
             Assert.IsTrue(actual is null);
         }
@@ -66,9 +70,8 @@ namespace Redis.Data.Tests
             //Arrange
             string expected = "Teste";
             MockDB.Setup(m => m.StringGetAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>())).Returns(Task.FromResult(new RedisValue("Teste")));
-            RedisContext redisContext = new RedisContext(MockConn.Object);
             //Act
-            string actual = await redisContext.GetAsync("variavel");
+            string actual = await RedisContext.GetAsync("variavel");
             //Assert
             Assert.AreEqual(expected, actual);
         }
@@ -77,9 +80,8 @@ namespace Redis.Data.Tests
         {
             //Arrange
             MockDB.Setup(m => m.StringGetAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>())).Returns(Task.FromResult(new RedisValue("")));
-            RedisContext redisContext = new RedisContext(MockConn.Object);
             //Act
-            string actual = await redisContext.GetAsync("variavel");
+            string actual = await RedisContext.GetAsync("variavel");
             //Assert
             Assert.IsTrue(string.IsNullOrWhiteSpace(actual));
         }
@@ -89,9 +91,8 @@ namespace Redis.Data.Tests
             //Arrange
             var expected = JsonSerializer.Deserialize<Test>("{\"Teste\":\"Teste\"}");
             MockDB.Setup(m => m.StringGetAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>())).Returns(Task.FromResult(new RedisValue("{\"Teste\":\"Teste\"}")));
-            RedisContext redisContext = new RedisContext(MockConn.Object);
             //Act
-            var actual = await redisContext.GetAsync<Test>("variavel");
+            var actual = await RedisContext.GetAsync<Test>("variavel");
             //Assert
             Assert.AreEqual(expected.Teste, actual.Teste);
         }
@@ -100,9 +101,8 @@ namespace Redis.Data.Tests
         {
             //Arrange
             MockDB.Setup(m => m.StringGetAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>())).Returns(Task.FromResult(new RedisValue("")));
-            RedisContext redisContext = new RedisContext(MockConn.Object);
             //Act
-            var actual = await redisContext.GetAsync<Test>("variavel");
+            var actual = await RedisContext.GetAsync<Test>("variavel");
             //Assert
             Assert.IsTrue(actual is null);
         }
@@ -117,9 +117,8 @@ namespace Redis.Data.Tests
                 {
                     keys.Add(key, valeu);
                 });
-            RedisContext redisContext = new RedisContext(MockConn.Object);
             //Act
-            await redisContext.SetAsync("Teste", "Teste");
+            await RedisContext.SetAsync("Teste", "Teste");
             //Assert
             Assert.IsTrue(keys.Count > 0);
         }
@@ -134,9 +133,8 @@ namespace Redis.Data.Tests
                 {
                     keys.Add(key, valeu);
                 });
-            RedisContext redisContext = new RedisContext(MockConn.Object);
             //Act
-            redisContext.Set("Teste", "Teste");
+            RedisContext.Set("Teste", "Teste");
             //Assert
             Assert.IsTrue(keys.Count > 0);
         }
@@ -146,9 +144,8 @@ namespace Redis.Data.Tests
             //Arrange
             Dictionary<string, string> keys = new Dictionary<string, string>();
             MockDB.Setup(m => m.KeyDeleteAsync(It.IsAny<RedisKey>(), CommandFlags.None)).Returns(Task.FromResult(true));
-            RedisContext redisContext = new RedisContext(MockConn.Object);
             //Act
-            var actual = await redisContext.DeleteAsync("Teste");
+            var actual = await RedisContext.DeleteAsync("Teste");
             //Assert
             Assert.IsTrue(actual);
         }
@@ -158,9 +155,8 @@ namespace Redis.Data.Tests
             //Arrange
             Dictionary<string, string> keys = new Dictionary<string, string>();
             MockDB.Setup(m => m.KeyDelete(It.IsAny<RedisKey>(), CommandFlags.None)).Returns(true);
-            RedisContext redisContext = new RedisContext(MockConn.Object);
             //Act
-            var actual = redisContext.Delete("Teste");
+            var actual = RedisContext.Delete("Teste");
             //Assert
             Assert.IsTrue(actual);
         }
@@ -176,10 +172,9 @@ namespace Redis.Data.Tests
             int expected = -1;
             Dictionary<string, string> keys = new Dictionary<string, string>();
             MockDB.SetupGet(m => m.Database).Returns(-1);
-            IRedisContext redisContext = new RedisContext(MockConn.Object);
             //Act
-            redisContext.SetDatabase();
-            var actual = redisContext.Database.Database;
+            RedisContext.SetDatabase();
+            var actual = RedisContext.Database.Database;
             //Assert
             Assert.AreEqual(expected, actual);
         }
@@ -196,10 +191,9 @@ namespace Redis.Data.Tests
                 _db = db;
                 return MockDB.Object;
             });
-            IRedisContext redisContext = new RedisContext(MockConn.Object);
             //Act
-            redisContext.SetDatabase(0);
-            var actual = redisContext.Database.Database;
+            RedisContext.SetDatabase(0);
+            var actual = RedisContext.Database.Database;
             //Assert
             Assert.AreEqual(expected, actual);
         }
@@ -213,9 +207,8 @@ namespace Redis.Data.Tests
             MockServer.Setup(m => m.Keys(It.IsAny<int>(),It.IsAny<RedisValue>(), It.IsAny<int>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<CommandFlags>()))
                 .Returns(keys);
             MockDB.Setup(m => m.StringGet(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>())).Returns("Teste");
-            RedisContext redisContext = new RedisContext(MockConn.Object);
             //Act
-            var actual = redisContext.GetAll();
+            var actual = RedisContext.GetAll();
             //Assert
             Assert.IsTrue(actual.ContainsKey(expected));
         }
@@ -229,9 +222,8 @@ namespace Redis.Data.Tests
             MockServer.Setup(m => m.Keys(It.IsAny<int>(), It.IsAny<RedisValue>(), It.IsAny<int>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<CommandFlags>()))
                 .Returns(keys);
             MockDB.Setup(m => m.StringGetAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>())).Returns(Task.FromResult(new RedisValue("Teste")));
-            RedisContext redisContext = new RedisContext(MockConn.Object);
             //Act
-            var actual = await redisContext.GetAllAsync();
+            var actual = await RedisContext.GetAllAsync();
             //Assert
             Assert.IsTrue(actual.ContainsKey(expected));
         }

@@ -1,4 +1,6 @@
-﻿using StackExchange.Redis;
+﻿using Microsoft.Extensions.Options;
+using Redis.Data.Options;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,10 +14,10 @@ namespace Redis.Data
         private readonly IConnectionMultiplexer _connection;
         private IDatabase _db;
         public IDatabase Database { get; }
-        public RedisContext(IConnectionMultiplexer connection)
+        public RedisContext(IConnectionMultiplexer connection, IOptions<DatabaseOptions> options)
         {
             _connection = connection;
-            _db = connection.GetDatabase();
+            _db = connection.GetDatabase(options.Value.Database);
             Database = _db;
         }
         public void SetDatabase(int db = -1, object asyncState = null)

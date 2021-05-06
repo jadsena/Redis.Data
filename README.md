@@ -16,11 +16,28 @@ Abrir o gerenciador de pacotes nuget e pesquisar na aba `Procurar` pelo nome do 
 
 Na class `startup.cs` realizar as seguintes alterações:
 
+Utilizando o database padrãodo Redis
+
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddControllers();
+    //Metodo default
     services.AddRedisDB(Configuration.GetConnectionString("Redis"));
+
+    // Register the Swagger generator, defining 1 or more Swagger documents
+    services.AddSwaggerGen();
+}
+```
+
+Utilizando um database diferente do padrão
+
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddControllers();
+    //Metodo setando o database
+    services.AddRedisDB(Configuration.GetConnectionString("Redis"), 1);
 
     // Register the Swagger generator, defining 1 or more Swagger documents
     services.AddSwaggerGen();
@@ -44,7 +61,7 @@ Configurando a conexão com o Redis no arquivo `appSettings.json`
 }
 ```
 
-Usando a aconexão em um Controller
+Usando a conexão em um Controller
 
 ```csharp
 [Route("api/[controller]")]
